@@ -23,3 +23,13 @@ system under test.
 
 With all of its dependencies installed, this module can be installed by calling
 `pip install . --upgrade` from the root of this repository.
+
+## Type Checking
+
+Static type checking of the code can be performed via
+[mypy](https://mypy.readthedocs.io/en/latest/python2.html) at the root of
+this repository:
+
+```
+$ mypy --py2 --ignore-missing-imports .
+```
