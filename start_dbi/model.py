@@ -60,5 +60,17 @@ class Model(object):
         """
         Determines whether a given execution trace is deemed to have been
         produced by a compromised binary.
+
+        Returns:
+            True if trace is believed to belong to a compromised binary, else
+            False.
         """
-        raise NotImplementedError
+        logging.debug("determining whether execution trace belongs to a compromised binary")  # noqa: pycodestyle
+        arr = numpy.array(trace.values).reshape(1, -1)
+
+        if self.__model.predict(arr) == -1:
+            logging.debug("execution trace believed to belong to a compromised binary")  # noqa: pycodestyle
+            return True
+
+        logging.debug("determined that execution trace does not belong to a compromised binary")  # noqa: pycodestyle
+        return False
