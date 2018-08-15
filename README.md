@@ -38,6 +38,13 @@ To construct a model from a collection of execution traces:
 model = Model.build(traces)
 ```
 
+To check whether a given execution trace is deemed by a model to have been
+produced by a compromised binary:
+
+```
+compromised = model.check(trace)
+```
+
 To save a model to disk:
 
 ```

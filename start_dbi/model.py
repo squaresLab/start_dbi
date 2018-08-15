@@ -54,3 +54,11 @@ class Model(object):
             logging.exception("an unexpected error occurred whilst saving model to file: %s", filename)
             raise
         logger.debug("saved model to file: %s", filename)
+
+    # type: (Trace) -> bool
+    def check(trace):
+        """
+        Determines whether a given execution trace is deemed to have been
+        produced by a compromised binary.
+        """
+        raise NotImplementedError
