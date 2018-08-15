@@ -2,6 +2,11 @@ __all__ = ['Trace']
 
 import logging
 import collections
+import tempfile
+import os
+
+from start_core.scenario import Scenario
+from start_core.mission import Mission
 
 logger = logging.getLogger(__name__)  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
@@ -11,6 +16,31 @@ class Trace(object):
     """
     Describes a trace for a single execution of ArduPilot.
     """
+    # type: (str, Mission) -> Trace
+    @staticmethod
+    def generate(binary, mission):
+        """
+        Executes a given mission using a specified ArduPilot binary and
+        returns its execution trace.
+        """
+        logging.debug("obtaining an execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
+                      binary, mission)
+
+        fn_signals = tempfile.mkstemp('.signal', 'start')
+        try:
+            # TODO
+            sitl_prefix = "TODO"
+
+            # TODO execute mission via `start_core`
+
+            trace = Trace.from_file(fn_signals)
+        finally:
+            os.remove(fn_signals)
+
+        logging.debug("obtained execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
+                      binary, mission)
+        return trace
+
     # type: (str) -> Trace
     @staticmethod
     def from_file(filename):
