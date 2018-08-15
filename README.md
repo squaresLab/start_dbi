@@ -10,6 +10,28 @@ To learn a model for the version of ArduPilot provided by a given scenario:
 model = learn(scenario)
 ```
 
+### Traces
+
+To generate an execution trace for a given binary and mission:
+
+```
+trace = Trace.generate(binary, mission)
+```
+
+To save a trace to file:
+
+```
+trace.to_file("foo.trace")
+```
+
+To load a trace from file:
+
+```
+trace = Trace.from_file("foo.trace")
+```
+
+### Models
+
 To construct a model from a collection of execution traces:
 
 ```
