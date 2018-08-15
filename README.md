@@ -13,13 +13,13 @@ model = learn(scenario)
 To save a model to disk:
 
 ```
-Model.to_file("foo.model")
+model.to_file("foo.model")
 ```
 
 To load a precomputed model from disk:
 
 ```
-Model.from_file("foo.model")
+model = Model.from_file("foo.model")
 ```
 
 ## Installation
