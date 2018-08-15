@@ -16,20 +16,41 @@ class Trace(object):
     """
     Describes a trace for a single execution of ArduPilot.
     """
-    # type: (str, Mission) -> Trace
+    # type: (str, Mission, str, str) -> Trace
     @staticmethod
-    def generate(binary, mission):
+    def generate(binary,
+                 mission,
+                 valgrind_binary,
+                 valgrind_flags):
         """
         Executes a given mission using a specified ArduPilot binary and
         returns its execution trace.
+
+        Parameters:
+            binary: the ArduPilot binary that should be used.
+            mission: the mission that should be executed.
+            valgrind_binary: the path to the Valgrind binary.
+            valgrind_flags: the Valgrind flags that should be passed to the SITL.
         """
         logging.debug("obtaining an execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
                       binary, mission)
 
+        # NOTE this problem was with START, right?
+        # The system was stripping off the initial slash, causing it not to
+        # find the valgrind binary. This is a workaround.
+        # if valgrind_binary.startswith('/'):
+        #     valgrind_binary_old = valgrind_binary
+        #     valgrind_binary = '/' + valgrind_binary
+        #     logging.debug("adding leading slash to valgrind binary: %s -> %s",
+        #                   valgrind_binary_old, valgrind_binary)
+
+        # TODO optionally, allow a signal file to specified.
         fn_signals = tempfile.mkstemp('.signal', 'start')
         try:
-            # TODO
-            sitl_prefix = "TODO"
+            sitl_prefix = "{} {} {}".format(valgrind_binary,
+                                            valgrind_flags,
+                                            fn_signals)
+            logging.debug("using SITL prefix: %s", sitl_prefix)
 
             # TODO execute mission via `start_core`
 
