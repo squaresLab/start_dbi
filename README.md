@@ -2,6 +2,12 @@
 
 Provides the DBI module for START
 
+## Interface
+
+```
+def build_model(scenario: Scenario) -> Model
+```
+
 ## Installation
 
 To avoid polluting the system's Python packages, we strongly recommend using
