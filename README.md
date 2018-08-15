@@ -10,6 +10,12 @@ To learn a model for the version of ArduPilot provided by a given scenario:
 model = learn(scenario)
 ```
 
+To construct a model from a collection of execution traces:
+
+```
+model = Model.build(traces)
+```
+
 To save a model to disk:
 
 ```
