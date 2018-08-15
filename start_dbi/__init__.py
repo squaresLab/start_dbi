@@ -17,8 +17,3 @@ logger.setLevel(logging.DEBUG)
 # type: (Scenario, List[Mission]) -> Model
 def learn(scenario, missions):
     raise NotImplementedError
-
-
-# type: (List[Trace]) -> Model
-def train(traces):
-    matrix = np.array([t.values for t in traces])
