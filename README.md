@@ -4,8 +4,22 @@ Provides the DBI module for START
 
 ## Interface
 
+To learn a model for the version of ArduPilot provided by a given scenario:
+
 ```
-def build_model(scenario: Scenario) -> Model
+model = learn(scenario)
+```
+
+To save a model to disk:
+
+```
+Model.to_file("foo.model")
+```
+
+To load a precomputed model from disk:
+
+```
+Model.from_file("foo.model")
 ```
 
 ## Installation
