@@ -2,7 +2,7 @@
 
 Provides the DBI module for START
 
-## Interface
+## Getting Started
 
 To learn a model for the version of ArduPilot provided by a given scenario:
 
