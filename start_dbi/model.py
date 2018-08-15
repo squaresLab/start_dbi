@@ -1,3 +1,9 @@
+import logging
+
+logger = logging.getLogger(__name__)  # type: logging.Logger
+logger.setLevel(logging.DEBUG)
+
+
 class Model(object):
     # type: (str) -> Model
     @staticmethod
