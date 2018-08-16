@@ -9,7 +9,7 @@ setuptools.setup(
     author_email='dskatz@gmail.com; christimperley@gmail.com',
     url='https://github.com/squaresLab/start-dbi',
     install_requires=[
-        'start_core',
+        'start-core',
         'numpy'
     ],
     packages=['start_dbi']
