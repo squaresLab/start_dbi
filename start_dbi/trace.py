@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
 
 VALGRIND_FLAGS_DEFAULT = \
-    '--trace-children=yes --trace-children-skip=which,mavproxy --tool=debgrind'
+    '--verbose --trace-children=yes --trace-children-skip=which,mavproxy,arduplane --tool=debgrind'
+# VALGRIND_FLAGS_DEFAULT = \
+#     '--tool=debgrind'
 VALGRIND_BINARY_DEFAULT = '/opt/debgrind/bin/valgrind'
 
 
@@ -58,7 +60,7 @@ class Trace(object):
         # TODO optionally, allow a signal file to specified.
         fh_signals, fn_signals = tempfile.mkstemp('.signal', 'start')
         try:
-            sitl_prefix = "{} {} --output-file='{}'"
+            sitl_prefix = "{} --log-file='/tmp/valgrind.out' {} --output-file='{}'"
             sitl_prefix = sitl_prefix.format(valgrind_binary,
                                              valgrind_flags,
                                              fn_signals)
@@ -81,8 +83,7 @@ class Trace(object):
         finally:
             os.remove(fn_signals)
 
-        logger.debug("obtained execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
-                     binary, mission)
+        logger.debug("obtained execution trace for mission [%s]", mission)
         return trace
 
     # type: (str) -> Trace
