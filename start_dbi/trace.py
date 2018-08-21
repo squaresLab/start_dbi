@@ -1,10 +1,13 @@
 __all__ = ['Trace']
 
+from typing import Optional
 import logging
 import collections
 import tempfile
 import os
 
+from start_core.attack import Attack
+from start_core.sitl import SITL
 from start_core.scenario import Scenario
 from start_core.mission import Mission
 
@@ -16,12 +19,16 @@ class Trace(object):
     """
     Describes a trace for a single execution of ArduPilot.
     """
-    # type: (str, Mission, str, str) -> Trace
     @staticmethod
-    def generate(binary,
-                 mission,
-                 valgrind_binary,
-                 valgrind_flags):
+    def generate(sitl,                      # type: SITL
+                 mission,                   # type: Mission
+                 valgrind_binary,           # type: str
+                 valgrind_flags,            # type: str
+                 timeout_mission,           # type: int
+                 timeout_connection=60,     # type: int
+                 timeout_liveness=15,       # type: int
+                 attack=None                # type: Optional[Attack]
+                 ):                         # type: (...) -> Trace
         """
         Executes a given mission using a specified ArduPilot binary and
         returns its execution trace.
@@ -32,8 +39,8 @@ class Trace(object):
             valgrind_binary: the path to the Valgrind binary.
             valgrind_flags: the Valgrind flags that should be passed to the SITL.
         """
-        logging.debug("obtaining an execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
-                      binary, mission)
+        logger.debug("obtaining an execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
+                     binary, mission)
 
         # NOTE this problem was with START, right?
         # The system was stripping off the initial slash, causing it not to
@@ -41,7 +48,7 @@ class Trace(object):
         # if valgrind_binary.startswith('/'):
         #     valgrind_binary_old = valgrind_binary
         #     valgrind_binary = '/' + valgrind_binary
-        #     logging.debug("adding leading slash to valgrind binary: %s -> %s",
+        #     logger.debug("adding leading slash to valgrind binary: %s -> %s",
         #                   valgrind_binary_old, valgrind_binary)
 
         # TODO optionally, allow a signal file to specified.
@@ -50,22 +57,33 @@ class Trace(object):
             sitl_prefix = "{} {} {}".format(valgrind_binary,
                                             valgrind_flags,
                                             fn_signals)
-            logging.debug("using SITL prefix: %s", sitl_prefix)
+            logger.debug("using SITL prefix: %s", sitl_prefix)
 
-            # TODO execute mission via `start_core`
+            logger.debug("executing mission")
+            (passed, reason) = execute_mission(sitl,
+                                               mission,
+                                               attack,
+                                               speedup=1,
+                                               prefix=sitl_prefix,
+                                               timeout_mission=timeout_mission,
+                                               timeout_liveness=timeout_liveness,
+                                               timeout_connection=timeout_connection)
+            logger.debug("finished executing mission")
 
+            logger.debug("attempting to read signals file")
             trace = Trace.from_file(fn_signals)
+            logger.debug("successfully read signals file")
         finally:
             os.remove(fn_signals)
 
-        logging.debug("obtained execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
-                      binary, mission)
+        logger.debug("obtained execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
+                     binary, mission)
         return trace
 
     # type: (str) -> Trace
     @staticmethod
     def from_file(filename):
-        logging.debug("loading trace from file: %s", filename)
+        logger.debug("loading trace from file: %s", filename)
         signal_to_value = collections.OrderedDict()
         try:
             with open(filename, 'r') as f:
@@ -73,13 +91,13 @@ class Trace(object):
                     name, val_as_string = line.strip().split()
                     signal_to_value[name] = float(val_as_string)
         except IOError:
-            logging.exception("failed to open trace file: %s", filename)
+            logger.exception("failed to open trace file: %s", filename)
             raise
         except Exception:
-            logging.exception("an unexpected failure occurred when parsing trace file: %s", filename)  # noqa: pycodestyle
+            logger.exception("an unexpected failure occurred when parsing trace file: %s", filename)  # noqa: pycodestyle
             raise
         trace = Trace(signal_to_value)
-        logging.debug("loaded trace from file: %s", filename)
+        logger.debug("loaded trace from file: %s", filename)
         return trace
 
     # type: (collections.OrderedDict) -> None
@@ -105,19 +123,19 @@ class Trace(object):
 
     # type: (str) -> None
     def to_file(filename):
-        logging.debug("saving trace to file: %s", filename)
+        logger.debug("saving trace to file: %s", filename)
         contents = ["{}: {}".format(n, v) for (n, v)
                     in self.__signal_to_value.items()]
         try:
             with open(filename, 'w') as f:
                 f.writelines(contents)
         except IOError:
-            logging.exception("failed to write trace to file: %s", filename)
+            logger.exception("failed to write trace to file: %s", filename)
             raise
         except Exception:
-            logging.exception("an unexpected failure occurred when saving trace file: %s", filename)  # noqa: pycodestyle
+            logger.exception("an unexpected failure occurred when saving trace file: %s", filename)  # noqa: pycodestyle
             raise
-        logging.debug("saved trace to file: %s", filename)
+        logger.debug("saved trace to file: %s", filename)
 
     # type: (str) -> float
     def __getitem__(self, name_signal):
