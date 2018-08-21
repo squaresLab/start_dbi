@@ -14,21 +14,25 @@ from start_core.mission import Mission
 logger = logging.getLogger(__name__)  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
 
+VALGRIND_FLAGS_DEFAULT = \
+    '--trace-children=yes --trace-children-skip=which,mavproxy --tool=debgrind'
+VALGRIND_BINARY_DEFAULT = '/opt/debgrind/bin/valgrind'
+
 
 class Trace(object):
     """
     Describes a trace for a single execution of ArduPilot.
     """
     @staticmethod
-    def generate(sitl,                      # type: SITL
-                 mission,                   # type: Mission
-                 valgrind_binary,           # type: str
-                 valgrind_flags,            # type: str
-                 timeout_mission,           # type: int
-                 timeout_connection=60,     # type: int
-                 timeout_liveness=15,       # type: int
-                 attack=None                # type: Optional[Attack]
-                 ):                         # type: (...) -> Trace
+    def generate(sitl,                                      # type: SITL
+                 mission,                                   # type: Mission
+                 timeout_mission,                           # type: int
+                 timeout_connection=60,                     # type: int
+                 timeout_liveness=15,                       # type: int
+                 valgrind_binary=VALGRIND_BINARY_DEFAULT,   # type: str
+                 valgrind_flags=VALGRIND_FLAGS_DEFAULT,     # type: str
+                 attack=None                                # type: Optional[Attack]
+                 ):                                         # type: (...) -> Trace
         """
         Executes a given mission using a specified ArduPilot binary and
         returns its execution trace.
@@ -39,8 +43,7 @@ class Trace(object):
             valgrind_binary: the path to the Valgrind binary.
             valgrind_flags: the Valgrind flags that should be passed to the SITL.
         """
-        logger.debug("obtaining an execution trace for mission [%s] using binary [%s]",  # noqa: pycodestyle
-                     binary, mission)
+        logger.debug("obtaining an execution trace for mission [%s]", mission)
 
         # NOTE this problem was with START, right?
         # The system was stripping off the initial slash, causing it not to
@@ -52,11 +55,12 @@ class Trace(object):
         #                   valgrind_binary_old, valgrind_binary)
 
         # TODO optionally, allow a signal file to specified.
-        fn_signals = tempfile.mkstemp('.signal', 'start')
+        fh_signals, fn_signals = tempfile.mkstemp('.signal', 'start')
         try:
-            sitl_prefix = "{} {} {}".format(valgrind_binary,
-                                            valgrind_flags,
-                                            fn_signals)
+            sitl_prefix = "{} {} --output='{}'"
+            sitl_prefix = sitl_prefix.format(valgrind_binary,
+                                             valgrind_flags,
+                                             fn_signals)
             logger.debug("using SITL prefix: %s", sitl_prefix)
 
             logger.debug("executing mission")
