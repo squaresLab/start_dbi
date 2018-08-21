@@ -10,6 +10,7 @@ from start_core.attack import Attack
 from start_core.sitl import SITL
 from start_core.scenario import Scenario
 from start_core.mission import Mission
+from start_core.test import execute as execute_mission
 
 logger = logging.getLogger(__name__)  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
@@ -57,7 +58,7 @@ class Trace(object):
         # TODO optionally, allow a signal file to specified.
         fh_signals, fn_signals = tempfile.mkstemp('.signal', 'start')
         try:
-            sitl_prefix = "{} {} --output='{}'"
+            sitl_prefix = "{} {} --output-file='{}'"
             sitl_prefix = sitl_prefix.format(valgrind_binary,
                                              valgrind_flags,
                                              fn_signals)
