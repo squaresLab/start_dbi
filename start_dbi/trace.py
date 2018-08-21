@@ -34,7 +34,8 @@ class Trace(object):
                  timeout_liveness=15,                       # type: int
                  valgrind_binary=VALGRIND_BINARY_DEFAULT,   # type: str
                  valgrind_flags=VALGRIND_FLAGS_DEFAULT,     # type: str
-                 attack=None                                # type: Optional[Attack]
+                 attack=None,                               # type: Optional[Attack]
+                 fn_signals=None                            # type: Optional[str]
                  ):                                         # type: (...) -> Trace
         """
         Executes a given mission using a specified ArduPilot binary and
@@ -48,17 +49,9 @@ class Trace(object):
         """
         logger.debug("obtaining an execution trace for mission [%s]", mission)
 
-        # NOTE this problem was with START, right?
-        # The system was stripping off the initial slash, causing it not to
-        # find the valgrind binary. This is a workaround.
-        # if valgrind_binary.startswith('/'):
-        #     valgrind_binary_old = valgrind_binary
-        #     valgrind_binary = '/' + valgrind_binary
-        #     logger.debug("adding leading slash to valgrind binary: %s -> %s",
-        #                   valgrind_binary_old, valgrind_binary)
+        if not fn_signals:
+            _, fn_signals = tempfile.mkstemp('.signal', 'start')
 
-        # TODO optionally, allow a signal file to specified.
-        fh_signals, fn_signals = tempfile.mkstemp('.signal', 'start')
         try:
             sitl_prefix = "{} --log-file='/tmp/valgrind.out' {} --output-file='{}'"
             sitl_prefix = sitl_prefix.format(valgrind_binary,
