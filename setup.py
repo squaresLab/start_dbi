@@ -10,7 +10,8 @@ setuptools.setup(
     url='https://github.com/squaresLab/start-dbi',
     install_requires=[
         'start-core',
-        'numpy'
+        'numpy',
+        'sklearn'
     ],
     packages=['start_dbi']
 )
