@@ -48,11 +48,15 @@ class Trace(object):
             valgrind_flags: the Valgrind flags that should be passed to the SITL.
         """
         logger.debug("obtaining an execution trace for mission [%s]", mission)
-
-        if not fn_signals:
-            _, fn_signals = tempfile.mkstemp('.signal', 'start')
+        using_temporary_signals = not fn_signals
 
         try:
+            if using_temporary_signals:
+                _, fn_signals = tempfile.mkstemp('.signal', 'start')
+                logger.debug("saving signals data to temporary file: %s", fn_signals)  # noqa: pycodestyle
+            else:
+                logger.debug("saving signals data to specified file: %s", fn_signals)  # noqa: pycodestyle
+
             sitl_prefix = "{} --log-file='/tmp/valgrind.out' {} --output-file='{}'"
             sitl_prefix = sitl_prefix.format(valgrind_binary,
                                              valgrind_flags,
