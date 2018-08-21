@@ -11,7 +11,8 @@ setuptools.setup(
     install_requires=[
         'start-core',
         'numpy',
-        'sklearn'
+        'sklearn',
+        'scipy'
     ],
     packages=['start_dbi']
 )
