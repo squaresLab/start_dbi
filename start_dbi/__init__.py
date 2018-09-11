@@ -14,6 +14,6 @@ logger = logging.getLogger(__name__)  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
 
 
-# type: (Scenario, List[Mission]) -> Model
 def learn(scenario, missions):
+    # type: (Scenario, List[Mission]) -> Model
     raise NotImplementedError

@@ -17,9 +17,9 @@ logger.setLevel(logging.DEBUG)
 
 VALGRIND_FLAGS_DEFAULT = \
     '--verbose --trace-children=yes --trace-children-skip=which,mavproxy,arduplane --tool=debgrind'
-# VALGRIND_FLAGS_DEFAULT = \
-#     '--tool=debgrind'
-VALGRIND_BINARY_DEFAULT = '/opt/debgrind/bin/valgrind'
+#VALGRIND_FLAGS_DEFAULT = \
+#    '--tool=debgrind'
+VALGRIND_BINARY_DEFAULT = '/usr0/home/dskatz/Documents/customized-valgrind/valgrind-bin/bin/valgrind'
 
 
 class Trace(object):
@@ -56,9 +56,11 @@ class Trace(object):
                 logger.debug("saving signals data to temporary file: %s", fn_signals)  # noqa: pycodestyle
             else:
                 logger.debug("saving signals data to specified file: %s", fn_signals)  # noqa: pycodestyle
+            log_fn = ("{}.log").format(fn_signals)
 
-            sitl_prefix = "{} --log-file='/tmp/valgrind.out' {} --output-file='{}'"
+            sitl_prefix = "{} --log-file='{}' {} --output-file='{}'"
             sitl_prefix = sitl_prefix.format(valgrind_binary,
+                                             log_fn,
                                              valgrind_flags,
                                              fn_signals)
             logger.debug("using SITL prefix: %s", sitl_prefix)
@@ -78,14 +80,15 @@ class Trace(object):
             trace = Trace.from_file(fn_signals)
             logger.debug("successfully read signals file")
         finally:
-            os.remove(fn_signals)
+            # os.remove(fn_signals)
+            pass
 
         logger.debug("obtained execution trace for mission [%s]", mission)
         return trace
 
-    # type: (str) -> Trace
     @staticmethod
     def from_file(filename):
+        # type: (str) -> Trace
         logger.debug("loading trace from file: %s", filename)
         signal_to_value = collections.OrderedDict()
         try:
@@ -103,29 +106,29 @@ class Trace(object):
         logger.debug("loaded trace from file: %s", filename)
         return trace
 
-    # type: (collections.OrderedDict) -> None
     def __init__(self, signal_to_value):
+        # type: (collections.OrderedDict) -> None
         self.__signal_to_value = signal_to_value
 
-    # type: () -> List[float]
     @property
     def values(self):
+        # type: () -> List[float]
         """
         Returns a list of the values for the signals belonging to this trace,
         in the order that they were reported by Valgrind.
         """
         return list(self.__signal_to_value.values())
 
-    # type: () -> List[str]
     @property
     def signals(self):
+        # type: () -> List[str]
         """
         Returns a list of the names of the signals contained within this trace.
         """
         return list(self.__signal_to_value.keys())
 
-    # type: (str) -> None
     def to_file(filename):
+        # type: (str) -> None
         logger.debug("saving trace to file: %s", filename)
         contents = ["{}: {}".format(n, v) for (n, v)
                     in self.__signal_to_value.items()]
@@ -140,8 +143,8 @@ class Trace(object):
             raise
         logger.debug("saved trace to file: %s", filename)
 
-    # type: (str) -> float
     def __getitem__(self, name_signal):
+        # type: (str) -> float
         """
         Fetches the value of a given signal.
         """

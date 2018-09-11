@@ -3,7 +3,8 @@ __all__ = ['Model']
 import logging
 
 import numpy
-import sklearn
+from sklearn import svm as svm_module
+from sklearn import externals
 
 from .trace import Trace
 
@@ -21,19 +22,19 @@ class Model(object):
         """
         logging.debug("building model from provided traces.")
         matrix = numpy.array([t.values for t in traces])
-        svm = sklearn.svm.OneClassSVM()
+        svm = svm_module.OneClassSVM()
         svm.fit(matrix)
         model = Model(svm)
         logging.debug("built model from provided traces.")
         return model
 
-    # type: (str) -> Model
     @staticmethod
     def from_file(filename):
+        # type: (str) -> Model
         logging.debug("loading model from file: %s", filename)
         try:
-            svm = sklearn.svm.OneClassSVM()
-            svm = sklearn.joblib.externals.dump(model, filename)
+            svm = svm_module.OneClassSVM()
+            svm = externals.joblib.load(model, filename)
             model = Model(svm)
         except Exception:
             logging.exception("an unexpected error occurred whilst loading model from file: %s", filename)
@@ -41,22 +42,22 @@ class Model(object):
         logging.debug("loaded model from file: %s", filename)
         return model
 
-    # type: (sklearn.svm.OneClassSVM) -> None
     def __init__(self, model):
-        self.__model = model  # type: sklearn.svm.OneClassSVM
+        # type: (svm.OneClassSVM) -> None
+        self.__model = model  # type: svm.OneClassSVM
 
-    # type: (str) -> None
-    def to_file(filename):
+    def to_file(self, filename):
+        # type: (str) -> None
         logging.debug("saving model to file: %s", filename)
         try:
-            sklearn.joblib.externals.dump(self.__model, filename)
+            externals.joblib.dump(self.__model, filename)
         except Exception:
             logging.exception("an unexpected error occurred whilst saving model to file: %s", filename)
             raise
         logger.debug("saved model to file: %s", filename)
 
-    # type: (Trace) -> bool
     def check(trace):
+        # type: (Trace) -> bool
         """
         Determines whether a given execution trace is deemed to have been
         produced by a compromised binary.
@@ -74,3 +75,7 @@ class Model(object):
 
         logging.debug("determined that execution trace does not belong to a compromised binary")  # noqa: pycodestyle
         return False
+
+class Svm(Model):
+    def __init__(self, model):
+        Model.__init__(self, model)
