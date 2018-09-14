@@ -34,7 +34,7 @@ class Model(object):
         logging.debug("loading model from file: %s", filename)
         try:
             svm = svm_module.OneClassSVM()
-            svm = externals.joblib.load(model, filename)
+            svm = externals.joblib.load(filename)
             model = Model(svm)
         except Exception:
             logging.exception("an unexpected error occurred whilst loading model from file: %s", filename)
@@ -56,7 +56,7 @@ class Model(object):
             raise
         logger.debug("saved model to file: %s", filename)
 
-    def check(trace):
+    def check(self, trace):
         # type: (Trace) -> bool
         """
         Determines whether a given execution trace is deemed to have been
