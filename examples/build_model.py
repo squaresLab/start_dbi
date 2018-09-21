@@ -46,9 +46,11 @@ def parse_arguments():
     parser.add_argument('-f', '--filename', type=str,
                         default='saved.model',
                         help="Filename to save the model or load the model.")
-    parser.add_argument('-t', '--test_patch', type=str,
+    parser.add_argument('-p', '--test_patch', type=str,
                         default='no_patch',
                         help="Comma separated list of patches to test.")
+    parser.add_argument('--use_existing_traces', type=bool)
+    parser.add_argument('--trace_dir', type=str)
     args = parser.parse_args()
     return args
 
@@ -65,14 +67,25 @@ def main():
                  args.scenarios.split(',')]
 
     try:
-        logging.debug("Trying to load model from file: %s" % args.filename)
+        print("Trying to load model from file: %s" % args.filename)
         model = Model.from_file(args.filename)
     except:
+        print("building model")
+        if args.use_existing_traces:
+            if (os.path.isdir(args.trace_dir)):
+                trace_fns = [os.path.join(args.trace_dir, x) for x in
+                             os.listdir(args.trace_dir) if x.endswith('.trace')]
+                nominal_traces = [Trace.from_file(x) for x in trace_fns]
+                print("nominal_traces: %s" % nominal_traces)
+            else:
+                print("trace_dir %s is not a dir. exiting")
+                exit()
 
-        for fn_scenario in scenarios:
-            logging.debug("Running scenario %s" % fn_scenario)
-            scenario = Scenario.from_file(fn_scenario)
-            nominal_traces += run_multiple_times(scenario, args.num_iter)
+        else:
+            for fn_scenario in scenarios:
+                logging.debug("Running scenario %s" % fn_scenario)
+                scenario = Scenario.from_file(fn_scenario)
+                nominal_traces += run_multiple_times(scenario, args.num_iter)
 
 
 
@@ -101,6 +114,7 @@ def main():
                                                timeout_liveness=30,
                                                attack=scenario.attack)
                         compromised = model.check(trace)
+                        print("VALUE OF COMPROMISED: %s" % compromised)
                         logging.debug("Patch %s with scenario %s prediction:"
                                       % (patch, scenario))
                         if compromised:

@@ -57,7 +57,7 @@ class Model(object):
         logger.debug("saved model to file: %s", filename)
 
     def check(self, trace):
-        # type: (Trace) -> bool
+        # type: (Trace) -> [bool, float]
         """
         Determines whether a given execution trace is deemed to have been
         produced by a compromised binary.
@@ -69,9 +69,13 @@ class Model(object):
         logging.debug("determining whether execution trace belongs to a compromised binary")  # noqa: pycodestyle
         arr = numpy.array(trace.values).reshape(1, -1)
 
+        dist = self.__model.predict(arr)
+        logging.debug("type(self.__model.predict(arr): %s" %
+                      type(self.__model.predict(arr)))
+
         if self.__model.predict(arr) == -1:
             logging.debug("execution trace believed to belong to a compromised binary")  # noqa: pycodestyle
-            return True
+            return [True, dist]
 
         logging.debug("determined that execution trace does not belong to a compromised binary")  # noqa: pycodestyle
         return False

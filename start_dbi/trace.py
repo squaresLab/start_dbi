@@ -127,10 +127,10 @@ class Trace(object):
         """
         return list(self.__signal_to_value.keys())
 
-    def to_file(filename):
+    def to_file(self, filename):
         # type: (str) -> None
         logger.debug("saving trace to file: %s", filename)
-        contents = ["{}: {}".format(n, v) for (n, v)
+        contents = ["{} {}\n".format(n, v) for (n, v)
                     in self.__signal_to_value.items()]
         try:
             with open(filename, 'w') as f:
