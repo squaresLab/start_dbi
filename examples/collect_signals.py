@@ -30,30 +30,50 @@ def run_multiple_times(scenario, num_iter, to_attack, filename_base,
     else:
         attack = None
     filenames = []
-    for i in range(num_iter):
-        logging.debug("Running iteration %d of %d" % (i, num_iter))
-        uuid_tmp = (uuid.uuid4()).hex
-        filename = os.path.join(output_root,
-                                "%s_%s.trace" % (filename_base, uuid_tmp))
-        print("Filename: %s" % filename)
-        if patch:
-            with scenario.build(dir_ardupilot, filename_patch=patch) as sitl:
-                print("Testing patch %s with scenario %s" % (patch, scenario))
-                trace = Trace.generate(sitl,
+    if patch:
+        with scenario.build(dir_ardupilot, filename_patch=patch) as sitl:
+            print("Testing patch %s with scenario %s" % (patch, scenario))
+            for i in range(num_iter):
+                logging.debug("Running iteration %d of %d" % (i, num_iter))
+                uuid_tmp = (uuid.uuid4()).hex
+                filename = os.path.join(output_root,
+                                        "%s_%s.trace" % (filename_base,
+                                                         uuid_tmp))
+                print("Filename: %s" % filename)
+                try:
+                    trace = Trace.generate(sitl,
+                                           scenario.mission,
+                                           timeout_mission=600,
+                                           timeout_connection=2000,
+                                           timeout_liveness=30,
+                                           attack=attack)
+                    trace.to_file(filename)
+                    filenames.append(filename)
+                except Exception as e:
+                    print("Failed to run the trace.")
+                    print(traceback.format_exc())
+
+    else:
+        for i in range(num_iter):
+            logging.debug("Running iteration %d of %d" % (i, num_iter))
+            uuid_tmp = (uuid.uuid4()).hex
+            filename = os.path.join(output_root,
+                                    "%s_%s.trace" % (filename_base, uuid_tmp))
+            print("Filename: %s" % filename)
+
+            try:
+                trace = Trace.generate(scenario.sitl,
                                        scenario.mission,
                                        timeout_mission=600,
                                        timeout_connection=2000,
                                        timeout_liveness=30,
                                        attack=attack)
-        else:
-            trace = Trace.generate(scenario.sitl,
-                                   scenario.mission,
-                                   timeout_mission=600,
-                                   timeout_connection=2000,
-                                   timeout_liveness=30,
-                                   attack=attack)
-        trace.to_file(filename)
-        filenames.append(filename)
+            except Exception as e:
+                print("Failed to run the trace.")
+                print(traceback.format_exc())
+
+            trace.to_file(filename)
+            filenames.append(filename)
     return filenames
 
 ################################################################################
@@ -73,6 +93,8 @@ def parse_arguments():
     parser.add_argument('-p', '--patch', type=str,
                         default='no_patch',
                         help="Comma separated list of patches to test.")
+    parser.add_argument("--num_patch", type=int, default=1,
+                        help="Number of times to run each patch.")
     args = parser.parse_args()
     return args
 
@@ -90,6 +112,15 @@ def get_patches(scenario_name):
     patch_fns = [ os.path.join(patch_dir, x) for x in os.listdir(patch_dir)
                   if x.endswith(".diff")]
     return patch_fns
+
+################################################################################
+#
+# run_patches
+#
+################################################################################
+def run_patches():
+    pass
+
 
 ################################################################################
 #
@@ -125,11 +156,15 @@ def main():
                     run_multiple_times(scenario, args.num_iter, attack,
                                        filename_base)
 
+                print ("****************************STARTING PATCHES****************")
                 for patch in patches:
-                    filename_base = ("scenario%s_missions%s_%s_patch%s" %
-                                     (scenario_name, mission_fn, "attack"))
-                    run_multiple_times(scenario, 1, True, filename_base,
-                                       patch)
+                    print("PATCH: %s" % patch)
+                    filename_base = ("scenario%s_mission%s_%s_patch%s" %
+                                     (scenario_name, mission_fn, "attack",
+                                      os.path.basename(patch)))
+                    run_multiple_times(scenario, args.num_patch, True,
+                                       filename_base,
+                                       patch=patch)
 
 
         except Exception as e:

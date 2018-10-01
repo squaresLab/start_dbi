@@ -5,6 +5,7 @@ import logging
 import numpy
 from sklearn import svm as svm_module
 from sklearn import externals
+from sklearn.neighbors import LocalOutlierFactor
 
 from .trace import Trace
 
@@ -83,3 +84,20 @@ class Model(object):
 class Svm(Model):
     def __init__(self, model):
         Model.__init__(self, model)
+
+class LOF(object):
+
+    def build(self, traces, neighbors=20):
+        """
+        Constructs a LOF model from a set of execution traces.
+        This model trains and predicts on a single set of data,
+        that contains both nominal data and outliers.
+        """
+        logging.debug("building an LOF model from a set of execution traces")
+        matrix = numpy.array([t.values for t in traces])
+        lof = LocalOutlierFactor(n_neighbors=neighbors)
+        labels = lof.fit_predict(matrix)
+        self.__model = lof
+        return labels
+    def get_model(self):
+        return self.__model
